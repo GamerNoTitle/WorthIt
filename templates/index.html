@@ -225,8 +225,11 @@
     <s-dialog id="nav-login-dialog" style="padding: 16px;">
       <div slot="headline">登录</div>
       <div slot="text">
-        <p>请输入登录凭据</p>
-        <s-text-field id="username" label="用户名" style="display: grid; width: auto; margin-bottom: 16px;"></s-text-field>
+        <div align="center">
+          <s-alert style="max-width: 90%; width: 100%;">请输入登录凭据</s-alert>
+        </div>
+        <s-text-field id="username" label="用户名"
+          style="display: grid; width: auto; margin-bottom: 16px; margin-top:16px;"></s-text-field>
         <s-text-field id="password" type="password" label="密码" style="display: grid; width: auto;"></s-text-field>
         <br>
         <div align="right">
