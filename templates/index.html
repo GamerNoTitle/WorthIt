@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="zh-cn">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#fbfdf7" />
+  <title>WorthIt 记物</title>
+  <script src="/static/js/sober-theme.min.js"></script>
+  <style>
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      margin: 0;
+      /**禁用字体缩放**/
+      -webkit-text-size-adjust: none;
+    }
+
+    /**隐藏未加载的组件**/
+    :not(:defined) {
+      display: none;
+    }
+
+    .nav-head {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-bottom: solid 1px var(--s-color-surface-variant);
+      padding: 48px 16px 24px 16px;
+      text-align: center;
+      background-image: linear-gradient(22.5deg, #43434305 0%, #43434305 29%, #2f2f2f05 29%, #2f2f2f05 37%, #17171705 37%, #17171705 55%, #b6b6b605 55%, #b6b6b605 69%, #1b1b1b05 69%, #1b1b1b05 71%, #fafafa05 71%, #fafafa05 100%), linear-gradient(67.5deg, #75757505 0%, #75757505 14%, #c7c7c705 14%, #c7c7c705 40%, #21212105 40%, #21212105 48%, #87878705 48%, #87878705 60%, #94949405 60%, #94949405 95%, #35353505 95%, #35353505 100%), linear-gradient(135deg, #bebebe05 0%, #bebebe05 6%, #fbfbfb05 6%, #fbfbfb05 18%, #02020205 18%, #02020205 27%, #fdfdfd05 27%, #fdfdfd05 49%, #80808005 49%, #80808005 76%, #96969605 76%, #96969605 100%);
+    }
+
+    .nav-head>s-avatar {
+      width: 64px;
+    }
+
+    .nav-head>p {
+      margin: 16px 0 0 0;
+      font-size: .875rem;
+      line-height: 1.6;
+      color: var(--s-color-on-surface-variant);
+    }
+
+    .main {
+      container-name: main;
+      container-type: inline-size;
+      overscroll-behavior: none;
+    }
+
+    .appbar {
+      background: none;
+      position: absolute;
+      width: 100%;
+      box-sizing: border-box;
+      z-index: 1;
+    }
+
+    .appbar>s-icon-button,
+    .appbar>s-tooltip>s-icon-button,
+    .appbar>svg[slot=logo] {
+      color: #fff;
+    }
+
+    .header {
+      position: sticky;
+      top: -216px;
+      height: 65px;
+      background: var(--s-color-primary);
+      z-index: 1;
+      opacity: .95;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('./bg.jpg');
+      background-size: cover;
+      background-position: center;
+      pointer-events: none;
+      opacity: .8;
+    }
+
+    .list {
+      max-width: 1280px;
+      margin: auto;
+      column-count: 3;
+      column-gap: 0;
+      column-fill: balance;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+
+    .list>.item {
+      padding: 8px;
+      break-inside: avoid;
+      -webkit-break-inside: avoid;
+    }
+
+    .list s-card {
+      max-width: none;
+      display: block;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    @container main (max-width: 1024px) {
+      .header {
+        top: -224px;
+      }
+    }
+
+    @container main (max-width: 768px) {
+      .list {
+        column-count: 2;
+      }
+    }
+
+    @container main (max-width: 375px) {
+      .list {
+        column-count: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <s-page>
+    <s-drawer>
+      <!--左侧抽屉-->
+      <div slot="start">
+        <div class="nav-head">
+          <s-avatar src="/static/img/depot.png">
+          </s-avatar>
+          <p>我的物品买得有多值呢？</p>
+        </div>
+        <s-menu>
+          <div slot="label">控制台</div>
+          <s-menu-item checked="true" id="nav-my-items" onclick="changeNavigation(this)">
+            <svg slot="start" viewBox="0 -960 960 960">
+              <path
+                d="M200-640v440h560v-440H640v320l-160-80-160 80v-320H200Zm0 520q-33 0-56.5-23.5T120-200v-499q0-14 4.5-27t13.5-24l50-61q11-14 27.5-21.5T250-840h460q18 0 34.5 7.5T772-811l50 61q9 11 13.5 24t4.5 27v499q0 33-23.5 56.5T760-120H200Zm16-600h528l-34-40H250l-34 40Zm184 80v190l80-40 80 40v-190H400Zm-200 0h560-560Z">
+              </path>
+            </svg>
+            我的好物
+            <s-badge slot="end" style="width: auto;" id="item-count">88</s-badge>
+          </s-menu-item>
+          <s-menu-item id="nav-login-logout" onclick="openLoginLogoutDialog(this)" mode="login">
+            <svg slot="start" viewBox="0 0 1024 1024" id="icon-login-logout">
+              <svg viewBox="0 -960 960 960">
+                <path
+                  d="M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z">
+                </path>
+              </svg>
+            </svg>
+            登录
+          </s-menu-item>
+        </s-menu>
+        <s-menu>
+          <div slot="label">其他</div>
+          <s-menu-item onclick="openGithubRepo()"> Github </s-menu-item>
+          <s-menu-item onclick="openAboutDialog()"> 关于 </s-menu-item>
+          <s-dialog style="padding: 16px;" id="nav-about-dialog">
+            <div slot="headline"> 关于 </div>
+            <div slot="text">
+              <p>WorthIt 记物是一个开源的物品管理应用，旨在帮助用户记录和管理他们的物品。</p>
+              <p>项目地址：<a href="https://github.com/GamerNoTitle/WorthIt"
+                  target="_blank">https://github.com/GamerNoTitle/WorthIt</a></p>
+              <p>如果您对这个项目感兴趣，欢迎访问我的 Github 页面了解更多信息。</p>
+            </div>
+            <s-button slot="action" type="text">关闭</s-button>
+          </s-dialog>
+        </s-menu>
+      </div>
+      <!--主视图-->
+      <s-scroll-view class="main">
+        <div class="header"></div>
+        <div class="list">
+          <div class="item">
+            <s-card type="outlined" clickable="true">
+              <div slot="headline">何助谓土归娇心其冒龄婵斗谭第死丰光仅极，本于拢。</div>
+              <div slot="text">
+                惜同然故一说许，仍说落联苦起禀为得中六不首太知道责，一小本临起二中我力药活者王年诗才，对宫有中有者后受被争之她友负则在，句五促哥样刑，极开五遗当有而极一并到自秦临斯卡已使吾，葬倒郭就公讨自衣求笔整帝极慨金中，惊份回病世秦兄，量是自极对的勇为用召是能和临意。
+              </div>
+            </s-card>
+          </div>
+        </div>
+        <div class="pagination">
+          <s-pagination total="200" type="outlined"></s-pagination>
+        </div>
+      </s-scroll-view>
+      <!--应用栏-->
+      <s-appbar class="appbar">
+        <!--左侧导航按钮-->
+        <s-icon-button slot="navigation" onclick="document.querySelector('s-drawer').toggle()">
+          <s-icon name="menu"></s-icon>
+        </s-icon-button>
+        <!--搜索框-->
+        <s-search slot="search" placeholder="搜索关键字"
+          oninput="this.children[1].style.display=this.value===''?'none':'flex'">
+          <s-icon name="search" slot="start"></s-icon>
+          <s-icon-button slot="end" style="display: none"
+            onclick="this.parentElement.value='';this.style.display='none'">
+            <s-icon name="close"></s-icon>
+          </s-icon-button>
+        </s-search>
+        <s-tooltip slot="action">
+          <s-icon-button slot="trigger" id="toggleTheme">
+            <s-icon name="light_mode"></s-icon>
+          </s-icon-button>
+          切换主题
+        </s-tooltip>
+      </s-appbar>
+    </s-drawer>
+    <s-dialog id="nav-login-dialog" style="padding: 16px;">
+      <div slot="headline">登录</div>
+      <div slot="text">
+        <p>请输入登录凭据</p>
+        <s-text-field id="username" label="用户名" style="display: grid; width: auto; margin-bottom: 16px;"></s-text-field>
+        <s-text-field id="password" type="password" label="密码" style="display: grid; width: auto;"></s-text-field>
+        <br>
+        <div align="right">
+          <s-dialog style="padding: 16px;">
+            <s-button slot="trigger" style="margin-top: 16px;">忘记密码</s-button>
+            <div slot="headline" align="left">忘记密码</div>
+            <div slot="text" align="left">
+              <p>如果您忘记了密码，请直接在 Vercel 的环境变量 / Docker 的环境变量中进行重置</p>
+            </div>
+            <s-button slot="action" type="text">好的</s-button>
+          </s-dialog>
+          <s-button onclick="login()" style="margin-top: 16px;">登录</s-button>
+        </div>
+      </div>
+      <s-button slot="action" type="text">关闭</s-button>
+    </s-dialog>
+    <s-dialog id="nav-logout-dialog" style="padding: 16px;">
+      <div slot="headline">退出登录</div>
+      <div slot="text">
+        <p>您确定要退出登录吗？</p>
+      </div>
+      <s-button onclick="logout()" slot="action" type="text">确认</s-button>
+      <s-button slot="action" type="text">取消</s-button>
+    </s-dialog>
+  </s-page>
+
+  <script src="/static/js/sober.min.js"></script>
+  <script src="/static/js/script.js"></script>
+  <script>
+    const page = document.querySelector('s-page')
+    const toggleTheme = document.querySelector('#toggleTheme')
+    toggleTheme.onclick = () => page.toggle(page.isDark ? 'light' : 'dark', toggleTheme)
+    document.addEventListener('DOMContentLoaded', () => {
+      sober.theme.createScheme('#8e8cd8', { page: document.querySelector('s-page') })
+    })
+  </script>
+
+</html>

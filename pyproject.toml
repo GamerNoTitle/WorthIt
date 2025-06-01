@@ -1,0 +1,11 @@
+[project]
+name = "worthit"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "flask>=3.1.1",
+    "notion-client>=2.3.0",
+    "pydantic>=2.11.5",
+]
