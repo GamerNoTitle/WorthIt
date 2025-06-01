@@ -85,3 +85,30 @@ function openAddItemDialog() {
     const dialog = document.getElementById("add-item-dialog");
     dialog.setAttribute('showed', 'true');
 }
+
+function checkTokenExists() {
+    // 检查 cookie 中是否存在 token
+    fetch("/api/admin/health", {
+        method: "GET",
+        credentials: "include"
+    }).then(response => {
+        if (response.ok) {
+            const loginLogoutBtn = document.getElementById('nav-login-logout');
+            loginLogoutBtn.setAttribute('mode', 'logout');
+            loginLogoutBtn.innerHTML = `<svg slot="start" viewBox="0 0 1024 1024" id="icon-login-logout">
+              <svg viewBox="0 -960 960 960">
+                <path
+                  d="M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z">
+                </path>
+              </svg>
+            </svg>登出`;
+            const addItemBtn = document.getElementById('nav-add-item');
+            addItemBtn.classList.remove('hidden');
+        } else {
+            throw new Error("Token does not exist or is invalid");
+        }
+    }).catch(error => {
+
+    })
+
+}

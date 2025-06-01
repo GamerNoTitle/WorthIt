@@ -8,6 +8,7 @@
   <meta name="theme-color" content="#fbfdf7" />
   <title>WorthIt 记物</title>
   <script src="/static/js/sober-theme.min.js"></script>
+  <link rel="stylesheet" href="/static/css/style.css" />
   <style>
     html,
     body {
@@ -206,7 +207,7 @@
           <s-icon name="menu"></s-icon>
         </s-icon-button>
         <!--搜索框-->
-        <s-button id="nav-add-item" type="filled-tonal" onclick="openAddItemDialog()">
+        <s-button id="nav-add-item" type="filled-tonal" onclick="openAddItemDialog()" class="hidden">
           <s-icon name="add"></s-icon>
           添加物品
         </s-button>
@@ -273,7 +274,8 @@
     const toggleTheme = document.querySelector('#toggleTheme')
     toggleTheme.onclick = () => page.toggle(page.isDark ? 'light' : 'dark', toggleTheme)
     document.addEventListener('DOMContentLoaded', () => {
-      sober.theme.createScheme('#8e8cd8', { page: document.querySelector('s-page') })
+      // sober.theme.createScheme('#8e8cd8', { page: document.querySelector('s-page') });
+      checkTokenExists();
     })
   </script>
 

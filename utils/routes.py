@@ -133,6 +133,14 @@ def logout():
     response.delete_cookie("token")
     return response
 
+@ADMIN_API_ROUTES.route("/health", methods=["GET"])
+def admin_health_check():
+    """
+    检查用户是否登录
+    """
+    if not check_admin_access(is_request=False):
+        return jsonify({"success": False, "message": "Unauthorized access"}), 401
+    return jsonify({"success": True, "message": "Admin API is healthy"}), 200
 
 @ADMIN_API_ROUTES.route("/items", methods=["POST"])
 def create_item():
