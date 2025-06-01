@@ -206,14 +206,10 @@
           <s-icon name="menu"></s-icon>
         </s-icon-button>
         <!--搜索框-->
-        <s-search slot="search" placeholder="搜索关键字"
-          oninput="this.children[1].style.display=this.value===''?'none':'flex'">
-          <s-icon name="search" slot="start"></s-icon>
-          <s-icon-button slot="end" style="display: none"
-            onclick="this.parentElement.value='';this.style.display='none'">
-            <s-icon name="close"></s-icon>
-          </s-icon-button>
-        </s-search>
+        <s-button id="nav-add-item" type="filled-tonal" onclick="openAddItemDialog()">
+          <s-icon name="add"></s-icon>
+          添加物品
+        </s-button>
         <s-tooltip slot="action">
           <s-icon-button slot="trigger" id="toggleTheme">
             <s-icon name="light_mode"></s-icon>
@@ -228,9 +224,9 @@
         <div align="center">
           <s-alert style="max-width: 90%; width: 100%;">请输入登录凭据</s-alert>
         </div>
-        <s-text-field id="username" label="用户名"
+        <s-text-field id="login-username" label="用户名"
           style="display: grid; width: auto; margin-bottom: 16px; margin-top:16px;"></s-text-field>
-        <s-text-field id="password" type="password" label="密码" style="display: grid; width: auto;"></s-text-field>
+        <s-text-field id="login-password" type="password" label="密码" style="display: grid; width: auto;"></s-text-field>
         <br>
         <div align="right">
           <s-dialog style="padding: 16px;">
@@ -253,6 +249,20 @@
       </div>
       <s-button onclick="logout()" slot="action" type="text">确认</s-button>
       <s-button slot="action" type="text">取消</s-button>
+    </s-dialog>
+    <s-dialog style="padding: 16px;" id="global-dialog">
+      <div slot="headline" align="left" id="global-dialog-title">提示</div>
+      <div slot="text" align="left" id="global-dialog-text">
+        <p></p>
+      </div>
+      <s-button slot="action" type="text">好的</s-button>
+    </s-dialog>
+    <s-dialog style="padding: 16px;" id="add-item-dialog">
+      <div slot="headline" align="left">添加新的物品</div>
+      <div slot="text" align="left">
+        <p></p>
+      </div>
+      <s-button slot="action" type="text">好的</s-button>
     </s-dialog>
   </s-page>
 

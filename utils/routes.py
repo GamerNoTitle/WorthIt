@@ -1,5 +1,7 @@
 from flask import blueprints, send_from_directory, current_app, request, jsonify
 from utils.database import NotionItemTrackerClient
+from jwt import decode, encode, ExpiredSignatureError, InvalidTokenError
+from utils.security import verify_password
 
 ADMIN_API_ROUTES = blueprints.Blueprint("admin_api_routes", __name__)
 PUBLIC_ROUTES = blueprints.Blueprint("user_routes", __name__)
@@ -8,6 +10,51 @@ PUBLIC_API_ROUTES = blueprints.Blueprint("user_api_routes", __name__)
 PUBLIC_ROUTES.add_url_rule(
     "/", "index", lambda: send_from_directory("templates", "index.html")
 )
+
+
+@ADMIN_API_ROUTES.before_request
+def check_admin_access(is_request: bool = True):
+    cookie = request.cookies
+    token = cookie.get("token")
+    if not token:
+        if is_request:
+            return jsonify({"success": False, "message": "Unauthorized access"}), 401
+        else:
+            return False
+    try:
+        payload = decode(
+            token,
+            current_app.config["SECRET_KEY"],
+            algorithms=["HS256"],
+        )
+        if not is_request:
+            return True
+    except ExpiredSignatureError:
+        if is_request:
+            response = jsonify({"success": False, "message": "Token expired"})
+            response.delete_cookie("token")
+            return response, 401
+        else:
+            return False
+    except InvalidTokenError:
+        if is_request:
+            response = jsonify({"success": False, "message": "Invalid token"})
+            response.delete_cookie("token")
+            return response, 401
+        else:
+            return False
+    except Exception as e:
+        if is_request:
+            response = jsonify(
+                {"success": False, "message": f"Error decoding token: {str(e)}"}
+            )
+            response.delete_cookie("token")
+            return (
+                response,
+                500,
+            )
+        else:
+            return False
 
 
 @PUBLIC_ROUTES.route("/static/<path:filename>")
@@ -31,9 +78,60 @@ def get_items():
     """
     获取网站所有者的所有好物的接口
     """
-    client: NotionItemTrackerClient = current_app.client
-    items = client.read_items(include_formula_and_rollup=True)
-    return {"items": items}, 200
+    if not current_app.config["ENABLE_PUBLIC_VIEW"]:
+        if not check_admin_access(is_request=False):
+            return {
+                "success": False,
+                "message": "本好物页面未公开展示，你需要登录来进行查看！",
+            }, 403
+        client: NotionItemTrackerClient = current_app.client
+        items = client.read_items(include_formula_and_rollup=True)
+        return {"success": True, "items": items, "message": "success"}, 200
+    else:
+        client: NotionItemTrackerClient = current_app.client
+        items = client.read_items(include_formula_and_rollup=True)
+        return {"success": True, "items": items, "message": "success"}, 200
+
+
+@PUBLIC_API_ROUTES.route("/login", methods=["POST"])
+def login():
+    """
+    登录 API
+    """
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+    if not username or not password:
+        return (
+            jsonify(
+                {"success": False, "message": "Username and password are required"}
+            ),
+            400,
+        )
+    if username == current_app.config["WORTHIT_USERNAME"]:
+        if verify_password(password, current_app.config["WORTHIT_PASSWORD"]):
+            token = encode(
+                {"username": username},
+                current_app.config["SECRET_KEY"],
+                algorithm="HS256",
+            )
+            response = jsonify({"success": True, "message": "Login successful"})
+            response.set_cookie("token", token, httponly=True, secure=True)
+            return response
+        else:
+            return jsonify({"success": False, "message": "Invalid credentials"}), 401
+    else:
+        return jsonify({"success": False, "message": "Invalid credentials"}), 401
+
+
+@PUBLIC_API_ROUTES.route("/logout", methods=["POST"])
+def logout():
+    """
+    注销 API
+    """
+    response = jsonify({"success": True, "message": "Logout successful"})
+    response.delete_cookie("token")
+    return response
 
 
 @ADMIN_API_ROUTES.route("/items", methods=["POST"])
@@ -164,10 +262,7 @@ def modify_item(item_id: str):
         updates["退役日期"] = retirement_date
     if not remark is None:
         updates["备注"] = remark
-    result = client.update_item(
-        page_id=item_id,
-        updates=updates
-    )
+    result = client.update_item(page_id=item_id, updates=updates)
     if result:
         if result.get("object") == "page" and result.get("id"):
             return jsonify(
