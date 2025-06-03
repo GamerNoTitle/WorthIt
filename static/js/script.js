@@ -154,12 +154,15 @@ async function logout() {
  */
 async function flushItemList(active = false) {
     const itemList = document.getElementById('item-list-container');
-
     const loadingContainer = document.getElementById('loading-container');
-
-    loadingContainer.classList.remove('hidden');
-    document.getElementById("loading-error-container").classList.add('hidden');
+    const loadingErrorContainer = document.getElementById("loading-error-container");
     const loadingText = document.getElementById('loading-text');
+    const needLoginContainer = document.getElementById('need-login-container');
+
+    // 初始状态设置
+    loadingContainer.classList.remove('hidden');
+    loadingErrorContainer.classList.add('hidden');
+    needLoginContainer.classList.add('hidden'); // 隐藏需要登录的提示
     loadingText.innerText = '正在加载物品列表，请稍候...';
     itemList.classList.add('hidden');
 
@@ -186,29 +189,37 @@ async function flushItemList(active = false) {
 
             if (errorData.message === "本好物页面未公开展示，你需要登录来进行查看！") {
                 console.log(errorData.message);
-                const emptyContainer = document.getElementById('need-login-container');
-                emptyContainer.classList.remove('hidden');
+                needLoginContainer.classList.remove('hidden');
                 counter.innerText = '0';
             } else {
                 showDialog("错误", "获取物品列表失败，请稍后再试");
                 console.error('获取物品列表失败:', response.status, response.statusText, errorData);
                 itemList.classList.remove('hidden'); // 即使失败也要显示列表，可能显示错误信息
-                const errorElement = document.createElement('div');
-                errorElement.innerHTML = `<s-empty style="text-align: center; display: block; margin-top: 40px;">加载物品列表失败，请稍后再试。</s-empty>`;
+                
+                // 创建错误提示元素
+                const errorElement = document.createElement('s-empty');
+                errorElement.style.textAlign = 'center';
+                errorElement.style.display = 'block';
+                errorElement.style.marginTop = '40px';
+                errorElement.textContent = '加载物品列表失败，请稍后再试。';
                 itemList.appendChild(errorElement);
             }
             return; // 错误情况下直接返回
         }
 
         // 如果响应成功
-        const data = await response.json(); // 成功时也需要 await json()
+        const data = await response.json();
 
         counter.innerText = data.items.length || 0;
 
         if (data.items.length === 0) {
             itemList.classList.remove('hidden');
-            const emptyStateElement = document.createElement('div');
-            emptyStateElement.innerHTML = `<s-empty style="text-align: center; display: block; margin-top: 40px;">暂时还没有物品哦~</s-empty>`;
+            // 创建空状态提示元素
+            const emptyStateElement = document.createElement('s-empty');
+            emptyStateElement.style.textAlign = 'center';
+            emptyStateElement.style.display = 'block';
+            emptyStateElement.style.marginTop = '40px';
+            emptyStateElement.textContent = '暂时还没有物品哦~';
             itemList.appendChild(emptyStateElement);
             return; // 没有物品时直接返回
         }
@@ -220,32 +231,105 @@ async function flushItemList(active = false) {
             // 计算总价值
             const totalValue = (item.properties.购买价格 || 0) + (item.properties.附加价值 || 0);
 
-            itemElement.innerHTML = `
-            <s-card type="outlined" style="padding: 16px;">
-                <div slot="headline">${item.properties.物品名称 || '未知物品'}</div>
-                <div slot="subhead" style="margin-top: 8px;">${item.properties.备注 || ''}</div>
-                <div slot="text" style="margin-top: 8px;">
-                    <div>购买价格：${item.properties.购买价格 !== undefined ? item.properties.购买价格 + ' 元' : '未填写'}</div>
-                    ${item.properties.附加价值 !== undefined ? `<div>附加价值：${item.properties.附加价值} 元</div>` : ''}
-                    <div>总价值：${totalValue} 元</div>
-                    <div>购买日期：${item.properties.入役日期 || '未填写'}</div>
-                    ${item.properties.退役日期 ? "<div>退役日期：" + item.properties.退役日期 + "</div>" : ""}
-                    <div>服役天数：${item.properties.服役天数 !== undefined ? item.properties.服役天数 : '计算中...'}</div>
-                    <div>日均价格：${item.properties.日均价格 ? item.properties.日均价格 : "是刚刚开始用嘛？明天再来看吧 (¬◡¬)✧"}</div>
-                    <div style="margin-top: 8px; display: flex; justify-content: flex-end; gap: 8px;">
-                        ${loggedIn ? `<s-button onclick="openEditItemDialog('${item.id}', '${item.properties.物品名称}')" type="filled-tonal">编辑</s-button>` : ''}
-                        ${loggedIn ? `<s-button onclick="openDeleteItemDialog('${item.id}', '${item.properties.物品名称}')" type="outlined">删除</s-button>` : ''}
-                    </div>
-                </div>
-            </s-card>
-            `;
+            // 创建 s-card 元素
+            const sCard = document.createElement('s-card');
+            sCard.setAttribute('type', 'outlined');
+            sCard.style.padding = '16px';
+
+            // headline slot
+            const headlineDiv = document.createElement('div');
+            headlineDiv.setAttribute('slot', 'headline');
+            headlineDiv.textContent = item.properties.物品名称 || '未知物品';
+            sCard.appendChild(headlineDiv);
+
+            // subhead slot
+            const subheadDiv = document.createElement('div');
+            subheadDiv.setAttribute('slot', 'subhead');
+            subheadDiv.style.marginTop = '8px';
+            subheadDiv.textContent = item.properties.备注 || '';
+            sCard.appendChild(subheadDiv);
+
+            // text slot (main content)
+            const textDiv = document.createElement('div');
+            textDiv.setAttribute('slot', 'text');
+            textDiv.style.marginTop = '8px';
+
+            // 购买价格
+            const purchasePriceDiv = document.createElement('div');
+            purchasePriceDiv.textContent = `购买价格：${item.properties.购买价格 !== undefined ? item.properties.购买价格 + ' 元' : '未填写'}`;
+            textDiv.appendChild(purchasePriceDiv);
+
+            // 附加价值 (条件显示)
+            if (item.properties.附加价值 !== undefined) {
+                const additionalValueDiv = document.createElement('div');
+                additionalValueDiv.textContent = `附加价值：${item.properties.附加价值} 元`;
+                textDiv.appendChild(additionalValueDiv);
+            }
+
+            // 总价值
+            const totalValueDiv = document.createElement('div');
+            totalValueDiv.textContent = `总价值：${totalValue} 元`;
+            textDiv.appendChild(totalValueDiv);
+
+            // 购买日期
+            const entryDateDiv = document.createElement('div');
+            entryDateDiv.textContent = `购买日期：${item.properties.入役日期 || '未填写'}`;
+            textDiv.appendChild(entryDateDiv);
+
+            // 退役日期 (条件显示)
+            if (item.properties.退役日期) {
+                const retirementDateDiv = document.createElement('div');
+                retirementDateDiv.textContent = `退役日期：${item.properties.退役日期}`;
+                textDiv.appendChild(retirementDateDiv);
+            }
+
+            // 服役天数
+            const serviceDaysDiv = document.createElement('div');
+            serviceDaysDiv.textContent = `服役天数：${item.properties.服役天数 !== undefined ? item.properties.服役天数 : '计算中...'}`;
+            textDiv.appendChild(serviceDaysDiv);
+
+            // 日均价格
+            const dailyPriceDiv = document.createElement('div');
+            dailyPriceDiv.textContent = `日均价格：${item.properties.日均价格 ? item.properties.日均价格 : "是刚刚开始用嘛？明天再来看吧 (¬◡¬)✧"}`;
+            textDiv.appendChild(dailyPriceDiv);
+
+            // 按钮容器
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.marginTop = '8px';
+            buttonContainer.style.display = 'flex';
+            buttonContainer.style.justifyContent = 'flex-end';
+            buttonContainer.style.gap = '8px';
+
+            // 编辑按钮 (条件显示)
+            if (loggedIn) {
+                const editButton = document.createElement('s-button');
+                editButton.setAttribute('type', 'filled-tonal');
+                editButton.textContent = '编辑';
+                // 使用函数引用而不是字符串，避免XSS
+                editButton.onclick = () => openEditItemDialog(item.id, item.properties.物品名称);
+                buttonContainer.appendChild(editButton);
+            }
+
+            // 删除按钮 (条件显示)
+            if (loggedIn) {
+                const deleteButton = document.createElement('s-button');
+                deleteButton.setAttribute('type', 'outlined');
+                deleteButton.textContent = '删除';
+                // 使用函数引用而不是字符串，避免XSS
+                deleteButton.onclick = () => openDeleteItemDialog(item.id, item.properties.物品名称);
+                buttonContainer.appendChild(deleteButton);
+            }
+
+            textDiv.appendChild(buttonContainer);
+            sCard.appendChild(textDiv);
+            itemElement.appendChild(sCard);
             itemList.appendChild(itemElement);
         });
         itemList.classList.remove('hidden'); // 确保列表可见
     } catch (error) {
         console.error('获取物品列表时出错:', error);
         loadingContainer.classList.add('hidden');
-        document.getElementById("loading-error-container").classList.remove('hidden');
+        loadingErrorContainer.classList.remove('hidden'); // 显示加载错误容器
         counter.innerText = '0'; // 发生异常时计数器也为0
     }
 }
@@ -370,7 +454,7 @@ function openEditItemDialog(itemId, itemName) {
  */
 async function editItem(itemId, prevData) {
     // 获取所有相关输入框元素
-    const itemIdInput = document.getElementById('edit-item-id'); // 通常这个ID不用于修改，只是显示
+    const itemIdInput = document.getElementById('edit-item-id');
     const itemNameInput = document.getElementById('edit-item-name');
     const itemPriceInput = document.getElementById('edit-item-purchase-price');
     const itemAdditionValue = document.getElementById('edit-item-additional-value');
