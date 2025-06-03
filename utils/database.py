@@ -315,6 +315,7 @@ class NotionItemTrackerClient:
         print(
             f"NotionItemTrackerClient: 正在添加物品 '{item_name}' 到数据库 (ID: {self.database_id})..."
         )
+        print(f"入役日期: {entry_date}, 购买价格: {purchase_price}, 附加价值: {additional_value}, 退役日期: {retirement_date}, 备注: {remark}")
 
         properties = {
             "物品名称": self._format_property_for_notion(item_name, "title"),
@@ -340,8 +341,6 @@ class NotionItemTrackerClient:
                 parent={"database_id": self.database_id}, properties=properties
             )
             return response
-        except APIResponseError as e:
-            raise APIResponseError(f"添加物品时发生 API 错误: {e}") from e
         except Exception as e:
             raise Exception(f"添加物品时发生未知错误: {e}") from e
 
@@ -411,62 +410,3 @@ class NotionItemTrackerClient:
             return response
         except Exception as e:
             raise Exception(f"删除物品时发生未知错误: {e}") from e
-
-
-# 示例使用
-if __name__ == "__main__":
-    NOTION_API_TOKEN = (
-        ""
-    )
-    # 假设用户传入的是不带连字符的ID
-    USER_PROVIDED_DB_ID = ""
-
-    try:
-        # 实例化客户端，传入用户可能不带连字符的ID
-        tracker_client = NotionItemTrackerClient(NOTION_API_TOKEN, USER_PROVIDED_DB_ID)
-
-        # 客户端初始化后，会自动将正确的带连字符的数据库ID存储在 self.database_id 中
-        print(f"\n客户端已初始化，实际使用的数据库 ID: {tracker_client.database_id}")
-
-        # 现在可以调用不带 database_id 参数的方法
-        all_items_raw = tracker_client.read_items()
-        print(
-            f"\n从数据库 '{tracker_client.database_id}' 读取到 {len(all_items_raw)} 条原始物品数据。"
-        )
-
-        # 可以用 Pydantic 模型来验证和解析这些原始数据
-        from models import Item  # 导入 Pydantic 模型
-
-        parsed_items = []
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            for item_data in all_items_raw:
-                try:
-                    item = Item.model_validate(item_data)
-                    parsed_items.append(item)
-                except Exception as e:
-                    print(f"Pydantic 验证失败：{e} for item {item_data.get('id')}")
-
-            if w:
-                print("\n--- Pydantic 解析过程中捕获到以下警告 ---")
-                for warning_message in w:
-                    print(f"Warning: {warning_message.message}")
-
-        if parsed_items:
-            print("\n--- 使用 Pydantic 模型解析后的数据示例 (第一条) ---")
-            first_item = parsed_items[0]
-            print(f"物品名称: {first_item.properties.item_name}")
-            print(f"购买价格: {first_item.properties.purchase_price}")
-            print(f"入役日期: {first_item.properties.service_start_date}")
-            print(f"退役日期: {first_item.properties.service_end_date}")
-            print(f"日均价格: {first_item.properties.daily_price}")
-            print(f"服役天数: {first_item.properties.service_days}")
-            print(f"附加价值: {first_item.properties.additional_value}")
-            print(f"备注: {first_item.properties.note}")
-            print(f"ID: {first_item.id}")
-            print(f"Archived: {first_item.archived}")
-        else:
-            print("\n没有物品被成功解析。")
-
-    except (ValueError, APIResponseError, Exception) as e:
-        print(f"程序运行出错: {e}")

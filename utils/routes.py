@@ -142,6 +142,33 @@ def admin_health_check():
         return jsonify({"success": False, "message": "Unauthorized access"}), 401
     return jsonify({"success": True, "message": "Admin API is healthy"}), 200
 
+@ADMIN_API_ROUTES.route("/items/<item_id>", methods=["GET"])
+def get_item(item_id: str):
+    """
+    获取指定 ID 的物品数据
+    """
+    client: NotionItemTrackerClient = current_app.client
+    try:
+        items = client.read_items(include_formula_and_rollup=True)
+        for item in items:
+            if item.get("id") == item_id:
+                item = item
+                break
+    except Exception as e:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Failed to retrieve item. Please refer to the log for details.",
+                "error": str(e),
+            }
+        )
+    if item:
+        return jsonify({"success": True, "item": item, "message": "Item retrieved successfully"}), 200
+    else:
+        return jsonify(
+            {"success": False, "message": "Item not found", "error": "Item not found"}
+        ), 404
+
 @ADMIN_API_ROUTES.route("/items", methods=["POST"])
 def create_item():
     """
@@ -149,12 +176,20 @@ def create_item():
     """
     client: NotionItemTrackerClient = current_app.client
     data = request.json
-    name = data.get("name")
-    entry_date = data.get("entry_date")
-    purchase_price = data.get("purchase_price")
-    additional_value = data.get("additional_value")
-    retirement_date = data.get("retirement_date")
-    remark = data.get("remark")
+    name = data.get("properties", {}).get("name")
+    entry_date = data.get("properties", {}).get("entry_date")
+    purchase_price = data.get("properties", {}).get("purchase_price")
+    additional_value = data.get("properties", {}).get("additional_value")
+    retirement_date = data.get("properties", {}).get("retirement_date")
+    remark = data.get("properties", {}).get("remark")
+    # 检查必填字段
+    if not name or not entry_date or not purchase_price:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Name, entry date, and purchase price are required fields.",
+            }
+        ), 400
     try:
         result = client.add_item(
             item_name=name,
@@ -173,6 +208,7 @@ def create_item():
             }
         )
     if result:
+        print(result)
         if result.get("object") == "page" and result.get("id"):
             return jsonify(
                 {
@@ -196,7 +232,7 @@ def create_item():
             {
                 "success": False,
                 "message": "Failed to create item. Please refer to the log for details.",
-            }
+            }, 500
         )
 
 

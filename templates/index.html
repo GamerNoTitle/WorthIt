@@ -8,6 +8,8 @@
   <meta name="theme-color" content="#fbfdf7" />
   <title>WorthIt 记物</title>
   <script src="/static/js/sober-theme.min.js"></script>
+  <script src="/static/js/sober.min.js"></script>
+  <script src="/static/js/script.js"></script>
   <link rel="stylesheet" href="/static/css/style.css" />
   <style>
     html,
@@ -186,18 +188,15 @@
       <!--主视图-->
       <s-scroll-view class="main">
         <div class="header"></div>
-        <div class="list">
-          <div class="item">
-            <s-card type="outlined" clickable="true">
-              <div slot="headline">何助谓土归娇心其冒龄婵斗谭第死丰光仅极，本于拢。</div>
-              <div slot="text">
-                惜同然故一说许，仍说落联苦起禀为得中六不首太知道责，一小本临起二中我力药活者王年诗才，对宫有中有者后受被争之她友负则在，句五促哥样刑，极开五遗当有而极一并到自秦临斯卡已使吾，葬倒郭就公讨自衣求笔整帝极慨金中，惊份回病世秦兄，量是自极对的勇为用召是能和临意。
-              </div>
-            </s-card>
+        <div class="list" id="item-list-container">
+          <div class="item" id="item-list">
           </div>
         </div>
-        <div class="pagination">
-          <s-pagination total="200" type="outlined"></s-pagination>
+        <div align="center" id="loading-container">
+          <s-circular-progress indeterminate="true"></s-circular-progress>
+          <div id="loading-text" style="margin-top: 16px; color: var(--s-color-on-surface-variant);">
+            正在加载物品列表...
+          </div>
         </div>
       </s-scroll-view>
       <!--应用栏-->
@@ -258,24 +257,79 @@
       </div>
       <s-button slot="action" type="text">好的</s-button>
     </s-dialog>
-    <s-dialog style="padding: 16px;" id="add-item-dialog">
-      <div slot="headline" align="left">添加新的物品</div>
-      <div slot="text" align="left">
-        <p></p>
+    <s-dialog style="padding: 16px;" id="item-delete-dialog">
+      <div slot="headline" align="left" id="item-delete-dialog-title">删除物品</div>
+      <div slot="text" align="left" id="item-delete-dialog-text">
       </div>
-      <s-button slot="action" type="text">好的</s-button>
+      <s-button slot="action" type="filled-tonal">❌ 不对不对</s-button>
+      <s-button slot="action" type="outlined" id="item-delete-confirm-btn">✅ 对的对的</s-button>
+    </s-dialog>
+    <s-dialog id="edit-item-dialog" style="padding: 16px;">
+      <div slot="headline"> 修改物品 </div>
+      <div slot="text">
+        <div align="center" id="edit-item-loading-container" class="hidden">
+          <s-circular-progress indeterminate="true"></s-circular-progress>
+          <div id="edit-item-loading-text" style="margin-top: 16px; color: var(--s-color-on-surface-variant);">
+            正在加载物品 「」...
+          </div>
+        </div>
+        <div id="edit-item-input-container" class="hidden">
+          <s-text-field id="edit-item-id" class="hidden" readOnly="true"></s-text-field>
+          <s-text-field id="edit-item-name" label="物品名称"
+            style="display: grid; width: auto; margin-bottom: 16px;"></s-text-field>
+          <s-text-field id="edit-item-purchase-price" type="number" label="购买价格" style="display: grid; width: auto;"
+            onchange="onPurchasePriceChange()"></s-text-field>
+          <s-text-field id="edit-item-additional-value" type="number" label="附加价值"
+            style="display: grid; width: auto; margin-top: 16px;" onchange="onAdditionalValueChange()"></s-text-field>
+          <s-date-picker label="入役日期（YYYY-MM-DD）" id="edit-item-entry-date" style="margin-top: 16px;"
+            onchange="onEntryDateChange(this)"></s-date-picker>
+          <s-date-picker label="退役日期（YYYY-MM-DD）" id="edit-item-retirement-date" style="margin-top: 16px;"
+            onchange="onRetirementDateChange(this)"></s-date-picker>
+          <s-text-field id="edit-item-working-days" label="服役天数" readOnly="true"
+            style="display: grid; width: auto; margin-top: 16px;"></s-text-field>
+          <s-text-field id="edit-item-daily-value" label="日均价值" readOnly="true"
+            style="display: grid; width: auto; margin-top: 16px;"></s-text-field>
+          <s-text-field id="edit-item-description" label="备注"
+            style="display: grid; width: auto; margin-top: 16px;"></s-text-field>
+        </div>
+      </div>
+      <s-button slot="action" type="text">取消</s-button>
+      <s-button slot="action" type="filled-tonal" id="edit-item-save-btn">修改</s-button>
+    </s-dialog>
+    <s-dialog id="add-item-dialog" style="padding: 16px;">
+      <div slot="headline"> 添加物品 </div>
+      <div slot="text">
+        <div id="add-item-input-container">
+          <s-text-field id="add-item-name" label="物品名称"
+            style="display: grid; width: auto; margin-bottom: 16px;"></s-text-field>
+          <s-text-field id="add-item-purchase-price" type="number" label="购买价格" style="display: grid; width: auto;"
+            onchange="onAddPurchasePriceChange()"></s-text-field>
+          <s-text-field id="add-item-additional-value" type="number" label="附加价值"
+            style="display: grid; width: auto; margin-top: 16px;" onchange="onAdditionalValueChange()"></s-text-field>
+          <s-date-picker label="入役日期（YYYY-MM-DD）" id="add-item-entry-date" style="margin-top: 16px;"
+            onchange="onAddEntryDateChange()"></s-date-picker>
+          <s-date-picker label="退役日期（YYYY-MM-DD）" id="add-item-retirement-date" style="margin-top: 16px;"
+            onchange="onAddRetirementDateChange()"></s-date-picker>
+          <s-text-field id="add-item-working-days" label="服役天数" readOnly="true"
+            style="display: grid; width: auto; margin-top: 16px;"></s-text-field>
+          <s-text-field id="add-item-daily-value" label="日均价值" readOnly="true"
+            style="display: grid; width: auto; margin-top: 16px;"></s-text-field>
+          <s-text-field id="add-item-description" label="备注"
+            style="display: grid; width: auto; margin-top: 16px;"></s-text-field>
+        </div>
+      </div>
+      <s-button slot="action" type="text">取消</s-button>
+      <s-button slot="action" type="filled-tonal" id="add-item-save-btn" onclick="addItem()">添加</s-button>
     </s-dialog>
   </s-page>
 
-  <script src="/static/js/sober.min.js"></script>
-  <script src="/static/js/script.js"></script>
   <script>
     const page = document.querySelector('s-page')
     const toggleTheme = document.querySelector('#toggleTheme')
     toggleTheme.onclick = () => page.toggle(page.isDark ? 'light' : 'dark', toggleTheme)
     document.addEventListener('DOMContentLoaded', () => {
       // sober.theme.createScheme('#8e8cd8', { page: document.querySelector('s-page') });
-      checkTokenExists();
+      flushItemList();
     })
   </script>
 
