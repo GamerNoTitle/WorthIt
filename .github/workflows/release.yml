@@ -29,5 +29,3 @@ jobs:
           tags: |
             gamernotitle/worthit:latest
             gamernotitle/worthit:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
