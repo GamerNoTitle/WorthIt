@@ -73,5 +73,4 @@ app.register_blueprint(PUBLIC_API_ROUTES, url_prefix="/api/public")
 
 if __name__ == "__main__":
     app.client = notion_client
-    print(app.config)
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    app.run(host="127.0.0.1", port=5000, debug=False)

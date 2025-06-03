@@ -1,0 +1,35 @@
+name: Build and Push Docker Image to Docker Hub
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build_and_push:
+    # 指定运行此作业的操作系统环境
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 步骤 2: 登录到 Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            gamernotitle/worthit:latest # 总是更新 latest 标签
+            gamernotitle/worthit:${{ github.sha }} # 使用 Git commit SHA 作为标签，提供唯一版本标识
+          cache-from: type=gha # 启用 GitHub Actions 缓存，加速后续构建
+          cache-to: type=gha,mode=max # 将构建层缓存到 GitHub Actions 缓存中
