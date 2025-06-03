@@ -198,7 +198,7 @@ async function flushItemList(active = false) {
                     <div>购买日期：${item.properties.入役日期}</div>
                     ${item.properties.退役日期 ? "<div>退役日期：" + item.properties.退役日期 + "</div>" : ""}
                     <div>服役天数：${item.properties.服役天数}</div>
-                    <div>日均价格：${item.properties.日均价格}</div>
+                    <div>日均价格：${item.properties.日均价格? item.properties.日均价格: "是刚刚开始用嘛？明天再来看吧 (¬◡¬)✧"}</div>
                     <div style="margin-top: 8px;" align="right">
                         ${loggedIn ? `<s-button onclick="openEditItemDialog('${item.id}', '${item.properties.物品名称}')" type="filled-tonal">编辑</s-button>` : ''}
                         ${loggedIn ? `<s-button onclick="openDeleteItemDialog('${item.id}', '${item.properties.物品名称}')" type="outlined">删除</s-button>` : ''}
