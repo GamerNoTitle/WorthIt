@@ -766,3 +766,11 @@ function addItem() {
         showDialog("错误", error.message);
     });
 }
+
+function changeAccentColor(color, fromRecover = false) {
+    sober.theme.createScheme(color, { page: document.querySelector('s-page') })
+    localStorage.setItem('accentColor', color);
+    if (fromRecover) {
+        document.getElementById('color-picker').value = color;
+    }
+}
