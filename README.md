@@ -93,4 +93,68 @@ $ echo -n "password" | argon2 "$(openssl rand -base64 32)" -e -id -k 65540 -t 3 
 
 ![](https://assets.bili33.top/img/Github/WorthIt/msedge_PBZgBYFzRT.png)
 
-填写完成后点击下面的 Deploy 部署就可以了
+填写完成后点击下面的 Deploy 部署就可以了，剩下绑定自定义域名啥的就是 Vercel 平台使用的问题了
+
+### 在 Docker 中运行
+
+#### 从 Dockerhub 中拉取并运行
+
+```bash
+$ docker run -d \
+  -p 5000:5000 \
+  --name worthit \
+  -e WORTHIT_USERNAME="your_desired_username" \
+  -e WORTHIT_PASSWORD="your_password_hash" \
+  -e NOTION_TOKEN="your_notion_token" \
+  -e NOTION_DATABASE_ID="your_notion_database_id" \
+  gamernotitle/worthit
+```
+
+#### 从源码构建
+
+首先 clone 源码
+
+```bash
+$ git clone https://github.com/GamerNoTitle/WorthIt.git
+```
+
+然后用 Docker 构建
+
+```bash
+$ docker build . -t gamernotitle/worthit
+```
+
+接着直接运行即可
+
+```bash
+$ docker run -d \
+  -p 5000:5000 \
+  --name worthit \
+  -e WORTHIT_USERNAME="your_desired_username" \
+  -e WORTHIT_PASSWORD="your_password_hash" \
+  -e NOTION_TOKEN="your_notion_token" \
+  -e NOTION_DATABASE_ID="your_notion_database_id" \
+  gamernotitle/worthit
+```
+
+### 从源码运行
+
+首先确保自己电脑安装了 Python，然后 clone 一下源码
+
+```bash
+$ git clone https://github.com/GamerNoTitle/WorthIt.git
+$ cd WorthIt
+```
+
+然后装一下依赖
+
+```bash
+$ pip install -r requirements.txt
+```
+
+接着直接运行 `app.py` 即可
+
+```bash
+$ python app.py
+```
+
