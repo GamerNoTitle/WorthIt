@@ -271,7 +271,7 @@ def create_item():
             item_name=name,
             entry_date=entry_date,
             purchase_price=purchase_price,
-            additional_value=additional_value if additional_value is not None else None,
+            additional_value=additional_value if (additional_value is not None or additional_value == 0) else None,
             retirement_date=retirement_date if retirement_date is not None else None,
             remark=remark if remark is not None else None,
         )
