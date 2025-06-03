@@ -23,19 +23,33 @@ def check_admin_access(is_request: bool = True):
             return jsonify({"success": False, "message": "Unauthorized access"}), 401
         else:
             return False
+
+    # 云函数兼容性处理
     try:
-        try:
-            payload = decode(
-                token,
-                current_app.config["SECRET_KEY"],
-                algorithms=["HS256"],
+        secret_key = current_app.config["SECRET_KEY"]
+    except AttributeError:
+        secret_key = os.environ.get("SECRET_KEY", "")
+
+    if not secret_key:
+        if is_request:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "Server configuration error: missing secret key.",
+                    }
+                ),
+                500,
             )
-        except AttributeError:
-            payload = decode(
-                token,
-                os.environ.get("SECRET_KEY", ""),
-                algorithms=["HS256"],
-            )
+        else:
+            return False
+
+    try:
+        payload = decode(
+            token,
+            secret_key,  # 使用获取到的secret_key
+            algorithms=["HS256"],
+        )
         if not is_request:
             return True
     except ExpiredSignatureError:
@@ -87,24 +101,27 @@ def get_items():
     """
     获取网站所有者的所有好物的接口
     """
-    # ========== 云函数兼容性处理 ==============
+    # 云函数兼容性处理：获取 NotionItemTrackerClient 实例
     try:
         client: NotionItemTrackerClient = current_app.client
     except AttributeError:
         client = NotionItemTrackerClient(
             os.environ.get("NOTION_TOKEN", ""), os.environ.get("NOTION_DATABASE_ID", "")
         )
+
+    # 云函数兼容性处理：获取 ENABLE_PUBLIC_VIEW 配置
+    enable_public_view = False
     try:
-        _ = current_app.config["ENABLE_PUBLIC_VIEW"]
+        enable_public_view = current_app.config["ENABLE_PUBLIC_VIEW"]
     except AttributeError:
-        current_app.config["ENABLE_PUBLIC_VIEW"] = (
+        enable_public_view = (
             True
             if str(os.environ.get("ENABLE_PUBLIC_VIEW", "true")).lower()
             not in ["false", "0"]
             else False
         )
-    # ========== 兼容性处理结束 ==============
-    if not current_app.config["ENABLE_PUBLIC_VIEW"]:
+
+    if not enable_public_view:
         if not check_admin_access(is_request=False):
             return {
                 "success": False,
@@ -132,36 +149,56 @@ def login():
             ),
             400,
         )
+
+    # 云函数兼容性处理：获取 WORTHIT_USERNAME, WORTHIT_PASSWORD, SECRET_KEY
+    app_username = None
+    app_password_hash = None
+    secret_key = None
     try:
-        if username == current_app.config["WORTHIT_USERNAME"]:
-            if verify_password(password, current_app.config["WORTHIT_PASSWORD"]):
+        app_username = current_app.config["WORTHIT_USERNAME"]
+        app_password_hash = current_app.config["WORTHIT_PASSWORD"]
+        secret_key = current_app.config["SECRET_KEY"]
+    except AttributeError:
+        app_username = os.environ.get("WORTHIT_USERNAME")
+        app_password_hash = os.environ.get("WORTHIT_PASSWORD")
+        secret_key = os.environ.get("SECRET_KEY", "")
+
+    if not app_username or not app_password_hash or not secret_key:
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "message": "Server configuration error: missing credentials or secret key.",
+                }
+            ),
+            500,
+        )
+
+    if username == app_username:
+        if verify_password(password, app_password_hash):
+            try:
                 token = encode(
                     {"username": username},
-                    current_app.config["SECRET_KEY"],
+                    secret_key,  # 使用获取到的secret_key
                     algorithm="HS256",
                 )
                 response = jsonify({"success": True, "message": "Login successful"})
                 response.set_cookie("token", token, httponly=True, secure=True)
                 return response
-            else:
+            except Exception as e:
+                # 记录编码token的错误
+                current_app.logger.error(f"Error encoding token: {e}")
                 return (
-                    jsonify({"success": False, "message": "Invalid credentials"}),
-                    401,
+                    jsonify({"success": False, "message": "Failed to create token"}),
+                    500,
                 )
         else:
-            return jsonify({"success": False, "message": "Invalid credentials"}), 401
-    except AttributeError:
-        if username == os.environ.get("WORTHIT_USERNAME") and verify_password(
-            password, os.environ.get("WORTHIT_PASSWORD")
-        ):
-            token = encode(
-                {"username": username},
-                current_app.config["SECRET_KEY"],
-                algorithm="HS256",
+            return (
+                jsonify({"success": False, "message": "Invalid credentials"}),
+                401,
             )
-            response = jsonify({"success": True, "message": "Login successful"})
-            response.set_cookie("token", token, httponly=True, secure=True)
-            return response
+    else:
+        return jsonify({"success": False, "message": "Invalid credentials"}), 401
 
 
 @PUBLIC_API_ROUTES.route("/logout", methods=["POST"])
@@ -189,19 +226,19 @@ def get_item(item_id: str):
     """
     获取指定 ID 的物品数据
     """
-    # ========== 云函数兼容性处理 ==============
+    # 云函数兼容性处理：获取 NotionItemTrackerClient 实例
     try:
         client: NotionItemTrackerClient = current_app.client
     except AttributeError:
         client = NotionItemTrackerClient(
             os.environ.get("NOTION_TOKEN", ""), os.environ.get("NOTION_DATABASE_ID", "")
         )
-    # ========== 兼容性处理结束 ==============
+    item = None  # 初始化为None
     try:
         items = client.read_items(include_formula_and_rollup=True)
-        for item in items:
-            if item.get("id") == item_id:
-                item = item
+        for i in items:  # 使用 i 避免与外部 item 变量混淆
+            if i.get("id") == item_id:
+                item = i
                 break
     except Exception as e:
         return jsonify(
@@ -240,14 +277,13 @@ def create_item():
     """
     创建一个新的物品数据
     """
-    # ========== 云函数兼容性处理 ==============
+    # 云函数兼容性处理：获取 NotionItemTrackerClient 实例
     try:
         client: NotionItemTrackerClient = current_app.client
     except AttributeError:
         client = NotionItemTrackerClient(
             os.environ.get("NOTION_TOKEN", ""), os.environ.get("NOTION_DATABASE_ID", "")
         )
-    # ========== 兼容性处理结束 ==============
     data = request.json
     name = data.get("properties", {}).get("name")
     entry_date = data.get("properties", {}).get("entry_date")
@@ -271,7 +307,9 @@ def create_item():
             item_name=name,
             entry_date=entry_date,
             purchase_price=purchase_price,
-            additional_value=additional_value if (additional_value is not None or additional_value == 0) else None,
+            additional_value=additional_value
+            if (additional_value is not None or additional_value == 0)
+            else None,
             retirement_date=retirement_date if retirement_date is not None else None,
             remark=remark if remark is not None else None,
         )
@@ -284,7 +322,7 @@ def create_item():
             }
         )
     if result:
-        print(result)
+        print(result)  # 建议使用 current_app.logger.info(result)
         if result.get("object") == "page" and result.get("id"):
             return jsonify(
                 {
@@ -318,14 +356,13 @@ def delete_item(item_id):
     """
     删除指定 ID 的物品数据
     """
-    # ========== 云函数兼容性处理 ==============
+    # 云函数兼容性处理：获取 NotionItemTrackerClient 实例
     try:
         client: NotionItemTrackerClient = current_app.client
     except AttributeError:
         client = NotionItemTrackerClient(
             os.environ.get("NOTION_TOKEN", ""), os.environ.get("NOTION_DATABASE_ID", "")
         )
-    # ========== 兼容性处理结束 ==============
     try:
         result = client.delete_item(item_id)
     except Exception as e:
@@ -369,14 +406,13 @@ def modify_item(item_id: str):
     """
     修改特定物品数据
     """
-    # ========== 云函数兼容性处理 ==============
+    # 云函数兼容性处理：获取 NotionItemTrackerClient 实例
     try:
         client: NotionItemTrackerClient = current_app.client
     except AttributeError:
         client = NotionItemTrackerClient(
             os.environ.get("NOTION_TOKEN", ""), os.environ.get("NOTION_DATABASE_ID", "")
         )
-    # ========== 兼容性处理结束 ==============
     data = request.json
     name = data.get("name")
     entry_date = data.get("entry_date")
@@ -384,26 +420,38 @@ def modify_item(item_id: str):
     additional_value = data.get("additional_value")
     retirement_date = data.get("retirement_date")
     remark = data.get("remark")
+
     updates = {}
-    if not name is None:
+    if name is not None:
         updates["物品名称"] = name
-    if not entry_date is None:
+    if entry_date is not None:
         updates["入役日期"] = entry_date
-    if not purchase_price is None:
+    if purchase_price is not None:
         updates["购买价格"] = float(purchase_price)
-    if not additional_value is None:
+    if additional_value is not None:
         updates["附加价值"] = float(additional_value)
-    if not retirement_date is None:
+    if retirement_date is not None:
         updates["退役日期"] = retirement_date
-    if not remark is None:
+    if remark is not None:
         updates["备注"] = remark
-    result = client.update_item(page_id=item_id, updates=updates)
+
+    try:
+        result = client.update_item(page_id=item_id, updates=updates)
+    except Exception as e:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Failed to update item. Please refer to the log for details.",
+                "error": str(e),
+            }
+        )
+
     if result:
         if result.get("object") == "page" and result.get("id"):
             return jsonify(
                 {
                     "success": True,
-                    "message": "Item deleted successfully.",
+                    "message": "Item updated successfully.",
                 }
             )
         else:
@@ -411,7 +459,7 @@ def modify_item(item_id: str):
                 jsonify(
                     {
                         "success": False,
-                        "message": "Failed to delete item. Please refer to the log for details.",
+                        "message": "Failed to update item. Please refer to the log for details.",
                         "error": result,
                     }
                 ),
@@ -421,6 +469,6 @@ def modify_item(item_id: str):
         return jsonify(
             {
                 "success": False,
-                "message": "Failed to delete item. Please refer to the log for details.",
+                "message": "Failed to update item. Please refer to the log for details.",
             }
         )
