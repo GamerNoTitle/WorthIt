@@ -75,7 +75,6 @@ function showDialog(title, text) {
     const dialog = document.getElementById('global-dialog');
     document.getElementById('global-dialog-title').innerText = title;
     document.getElementById('global-dialog-text').innerText = text;
-    dialog.removeAttribute('showed');
     dialog.setAttribute('showed', 'true');
 }
 
