@@ -1,3 +1,10 @@
+<div align="center">
+<img src="https://cdn.bili33.top/gh/GamerNoTitle/WorthIt@master/static/img/favicon.png" style="zoom:25%;" >
+</div>
+
+
+
+
 # Worthit
 
 我的物品买得有多值呢？
