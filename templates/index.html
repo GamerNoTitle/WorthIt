@@ -315,9 +315,9 @@
           <s-text-field id="edit-item-additional-value" type="number" label="附加价值"
             style="display: grid; width: auto; margin-top: 16px;" oninput="onAdditionalValueChange()"></s-text-field>
           <s-date-picker label="入役日期（YYYY-MM-DD）" id="edit-item-entry-date" style="margin-top: 16px;"
-            oninput="onEntryDateChange(this)"></s-date-picker>
+            onchange="onEntryDateChange(this)"></s-date-picker>
           <s-date-picker label="退役日期（YYYY-MM-DD）" id="edit-item-retirement-date" style="margin-top: 16px;"
-            oninput="onRetirementDateChange(this)"></s-date-picker>
+            onchange="onRetirementDateChange(this)"></s-date-picker>
           <s-text-field id="edit-item-working-days" label="服役天数" readOnly="true"
             style="display: grid; width: auto; margin-top: 16px;"></s-text-field>
           <s-text-field id="edit-item-daily-value" label="日均价值" readOnly="true"
@@ -340,9 +340,9 @@
           <s-text-field id="add-item-additional-value" type="number" label="附加价值"
             style="display: grid; width: auto; margin-top: 16px;" oninput="onAdditionalValueChange()"></s-text-field>
           <s-date-picker label="入役日期（YYYY-MM-DD）" id="add-item-entry-date" style="margin-top: 16px;"
-            oninput="onAddEntryDateChange()"></s-date-picker>
+            onchange="onAddEntryDateChange()"></s-date-picker>
           <s-date-picker label="退役日期（YYYY-MM-DD）" id="add-item-retirement-date" style="margin-top: 16px;"
-            oninput="onAddRetirementDateChange()"></s-date-picker>
+            onchange="onAddRetirementDateChange()"></s-date-picker>
           <s-text-field id="add-item-working-days" label="服役天数" readOnly="true"
             style="display: grid; width: auto; margin-top: 16px;"></s-text-field>
           <s-text-field id="add-item-daily-value" label="日均价值" readOnly="true"
