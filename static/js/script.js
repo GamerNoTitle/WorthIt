@@ -119,7 +119,6 @@ async function checkTokenExistsAndValid() {
         }
     } catch (error) {
         console.error("检查 token 有效性时出错:", error);
-        // 通常，网络错误或服务器无法访问也意味着 token 无效或无法验证
         return false;
     }
 }
