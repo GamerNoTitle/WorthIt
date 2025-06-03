@@ -157,13 +157,11 @@ async function flushItemList(active = false) {
 
     const loadingContainer = document.getElementById('loading-container');
 
-    if (active) {
-        loadingContainer.classList.remove('hidden');
-        document.getElementById("loading-error-container").classList.add('hidden');
-        const loadingText = document.getElementById('loading-text');
-        loadingText.innerText = '正在加载物品列表，请稍候...';
-        itemList.classList.add('hidden');
-    }
+    loadingContainer.classList.remove('hidden');
+    document.getElementById("loading-error-container").classList.add('hidden');
+    const loadingText = document.getElementById('loading-text');
+    loadingText.innerText = '正在加载物品列表，请稍候...';
+    itemList.classList.add('hidden');
 
     // 确保在加载前清空列表
     itemList.innerHTML = '';
@@ -746,7 +744,7 @@ function addItem() {
             remark: itemDescriptionInput.value || ''
         }
     };
-
+    showDialog("正在添加", `请稍候，正在添加物品「${itemNameInput.value}」...`);
     fetch('/api/admin/items', {
         method: 'POST',
         headers: {
