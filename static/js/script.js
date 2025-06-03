@@ -244,11 +244,8 @@ async function flushItemList(active = false) {
         itemList.classList.remove('hidden'); // 确保列表可见
     } catch (error) {
         console.error('获取物品列表时出错:', error);
-        loadingContainer.classList.add('hidden'); // 发生异常时也隐藏加载提示
-        itemList.classList.remove('hidden'); // 确保列表可见
-        const errorElement = document.createElement('div');
-        errorElement.innerHTML = `<s-empty style="text-align: center; display: block; margin-top: 40px;">加载物品列表失败，请检查网络或稍后再试。</s-empty>`;
-        itemList.appendChild(errorElement);
+        loadingContainer.classList.add('hidden');
+        document.getElementById("loading-error-container").classList.remove('hidden');
         counter.innerText = '0'; // 发生异常时计数器也为0
     }
 }
