@@ -199,6 +199,14 @@
             正在加载物品列表...
           </div>
         </div>
+        <div align="center" id="need-login-container" class="hidden">
+          <s-empty style="text-align: center; margin-top: 40px;">
+            诶？这个好物页面需要登录才可以看诶！
+          </s-empty>
+          <s-button id="nav-login-btn" onclick="openLoginDialog()">
+            登录</s-button>
+        </div>
+        </div>
       </s-scroll-view>
       <!--应用栏-->
       <s-appbar class="appbar">

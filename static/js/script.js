@@ -166,40 +166,73 @@ async function flushItemList(active = false) {
         itemList.classList.add('hidden');
     }
 
+    // 确保在加载前清空列表
+    itemList.innerHTML = '';
+
+    const counter = document.getElementById('item-counter');
+    counter.innerText = '0'; // 在加载前将计数器重置为0
+
     try {
         const response = await fetch('/api/public/items', {
             method: 'GET',
             credentials: 'include'
         });
+
+        // 无论成功失败，都先隐藏加载容器
+        loadingContainer.classList.add('hidden');
+
         if (!response.ok) {
-            showDialog("错误", "获取物品列表失败，请稍后再试");
-            console.error('获取物品列表失败:', response.status, response.statusText);
-            return;
+            const errorData = await response.json();
+
+            if (errorData.message === "本好物页面未公开展示，你需要登录来进行查看！") {
+                console.log(errorData.message);
+                const emptyContainer = document.getElementById('need-login-container');
+                emptyContainer.classList.remove('hidden');
+                counter.innerText = '0';
+            } else {
+                showDialog("错误", "获取物品列表失败，请稍后再试");
+                console.error('获取物品列表失败:', response.status, response.statusText, errorData);
+                itemList.classList.remove('hidden'); // 即使失败也要显示列表，可能显示错误信息
+                const errorElement = document.createElement('div');
+                errorElement.innerHTML = `<s-empty style="text-align: center; display: block; margin-top: 40px;">加载物品列表失败，请稍后再试。</s-empty>`;
+                itemList.appendChild(errorElement);
+            }
+            return; // 错误情况下直接返回
         }
 
-        const data = await response.json();
-        itemList.innerHTML = '';
+        // 如果响应成功
+        const data = await response.json(); // 成功时也需要 await json()
 
-        loadingContainer.classList.add('hidden');
-        const counter = document.getElementById('item-counter');
-        counter.innerText = data.items.length;
+        counter.innerText = data.items.length || 0;
+
+        if (data.items.length === 0) {
+            itemList.classList.remove('hidden');
+            const emptyStateElement = document.createElement('div');
+            emptyStateElement.innerHTML = `<s-empty style="text-align: center; display: block; margin-top: 40px;">暂时还没有物品哦~</s-empty>`;
+            itemList.appendChild(emptyStateElement);
+            return; // 没有物品时直接返回
+        }
+
         data.items.forEach(item => {
             const itemElement = document.createElement('div');
             itemElement.className = 'item';
 
+            // 计算总价值
+            const totalValue = (item.properties.购买价格 || 0) + (item.properties.附加价值 || 0);
+
             itemElement.innerHTML = `
             <s-card type="outlined" style="padding: 16px;">
-                <div slot="headline">${item.properties.物品名称}</div>
-                <div slot="subhead" style="margin-top: 8px;">${item.properties.备注}</div>
+                <div slot="headline">${item.properties.物品名称 || '未知物品'}</div>
+                <div slot="subhead" style="margin-top: 8px;">${item.properties.备注 || '无备注'}</div>
                 <div slot="text" style="margin-top: 8px;">
-                    <div>购买价格：${item.properties.购买价格} 元</div>
-                    ${item.properties.附加价值 ? `<div>附加价值：${item.properties.附加价值} 元</div>` : ''}
-                    <div>总价值：${item.properties.附加价值 ? item.properties.购买价格 + item.properties.附加价值 : item.properties.购买价格} 元</div>
-                    <div>购买日期：${item.properties.入役日期}</div>
+                    <div>购买价格：${item.properties.购买价格 !== undefined ? item.properties.购买价格 + ' 元' : '未填写'}</div>
+                    ${item.properties.附加价值 !== undefined ? `<div>附加价值：${item.properties.附加价值} 元</div>` : ''}
+                    <div>总价值：${totalValue} 元</div>
+                    <div>购买日期：${item.properties.入役日期 || '未填写'}</div>
                     ${item.properties.退役日期 ? "<div>退役日期：" + item.properties.退役日期 + "</div>" : ""}
-                    <div>服役天数：${item.properties.服役天数}</div>
-                    <div>日均价格：${item.properties.日均价格? item.properties.日均价格: "是刚刚开始用嘛？明天再来看吧 (¬◡¬)✧"}</div>
-                    <div style="margin-top: 8px;" align="right">
+                    <div>服役天数：${item.properties.服役天数 !== undefined ? item.properties.服役天数 : '计算中...'}</div>
+                    <div>日均价格：${item.properties.日均价格 ? item.properties.日均价格 : "是刚刚开始用嘛？明天再来看吧 (¬◡¬)✧"}</div>
+                    <div style="margin-top: 8px; display: flex; justify-content: flex-end; gap: 8px;">
                         ${loggedIn ? `<s-button onclick="openEditItemDialog('${item.id}', '${item.properties.物品名称}')" type="filled-tonal">编辑</s-button>` : ''}
                         ${loggedIn ? `<s-button onclick="openDeleteItemDialog('${item.id}', '${item.properties.物品名称}')" type="outlined">删除</s-button>` : ''}
                     </div>
@@ -208,11 +241,15 @@ async function flushItemList(active = false) {
             `;
             itemList.appendChild(itemElement);
         });
-        itemList.classList.remove('hidden');
+        itemList.classList.remove('hidden'); // 确保列表可见
     } catch (error) {
         console.error('获取物品列表时出错:', error);
-        // 可以在这里添加一个显示错误消息的逻辑
-        // showDialog("错误", "加载物品列表失败，请稍后再试");
+        loadingContainer.classList.add('hidden'); // 发生异常时也隐藏加载提示
+        itemList.classList.remove('hidden'); // 确保列表可见
+        const errorElement = document.createElement('div');
+        errorElement.innerHTML = `<s-empty style="text-align: center; display: block; margin-top: 40px;">加载物品列表失败，请检查网络或稍后再试。</s-empty>`;
+        itemList.appendChild(errorElement);
+        counter.innerText = '0'; // 发生异常时计数器也为0
     }
 }
 
