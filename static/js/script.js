@@ -223,7 +223,7 @@ async function flushItemList(active = false) {
             itemElement.innerHTML = `
             <s-card type="outlined" style="padding: 16px;">
                 <div slot="headline">${item.properties.物品名称 || '未知物品'}</div>
-                <div slot="subhead" style="margin-top: 8px;">${item.properties.备注 || '无备注'}</div>
+                <div slot="subhead" style="margin-top: 8px;">${item.properties.备注 || ''}</div>
                 <div slot="text" style="margin-top: 8px;">
                     <div>购买价格：${item.properties.购买价格 !== undefined ? item.properties.购买价格 + ' 元' : '未填写'}</div>
                     ${item.properties.附加价值 !== undefined ? `<div>附加价值：${item.properties.附加价值} 元</div>` : ''}
