@@ -387,14 +387,25 @@
       colorPicker.value = accentColor;
       sober.theme.createScheme(accentColor, { page: document.querySelector('s-page') });
       flushItemList();
-    })
-    function changeAccentColor(color, fromRecover = false) {
-      sober.theme.createScheme(color, { page: document.querySelector('s-page') })
-      localStorage.setItem('accentColor', color);
-      if (fromRecover) {
-        document.getElementById('color-picker').value = color;
+      
+      const appbar = document.querySelector('.appbar');
+      const scrollView = document.querySelector('.main');
+
+      function updateAppbarShadow() {
+        // 检查滚动区域是否向下滚动了
+        // scrollTop 为 0 表示在最顶部
+        if (scrollView.scrollTop > 0) {
+          appbar.classList.add('scrolled'); // 如果滚动了
+        } else {
+          appbar.classList.remove('scrolled'); // 如果在顶部
+        }
       }
-    }
+
+      scrollView.addEventListener('scroll', updateAppbarShadow);
+
+      // 页面加载时立即调用一次，以设置初始状态（防止刷新后不在顶部但无阴影）
+      updateAppbarShadow();
+    })
   </script>
 
 </html>

@@ -74,5 +74,32 @@ s-dialog {
 }
 
 .appbar {
-    background-color: rgba(0, 0, 0, 0.2) !important;
+    background: none;
+    position: absolute;
+    width: 100%;
+    box-sizing: border-box;
+    z-index: 1;
+    transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    box-shadow: none;
+}
+
+/* 默认状态下（未滚动），appbar 内的图标是白色 */
+.appbar:not(.scrolled)>s-icon-button,
+.appbar:not(.scrolled)>s-tooltip>s-icon-button,
+.appbar:not(.scrolled)>svg[slot=logo] {
+    color: #fff;
+}
+
+/* 当 appbar 处于滚动状态时 */
+.appbar.scrolled {
+    /* 使用主题的表面颜色作为背景*/
+    background-color: var(--s-color-surface);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 当 appbar 处于滚动状态时，其内部图标的颜色变为主题的文字颜色，以保持可读性 */
+.appbar.scrolled>s-icon-button,
+.appbar.scrolled>s-tooltip>s-icon-button,
+.appbar.scrolled>svg[slot=logo] {
+    color: var(--s-color-on-surface);
 }
