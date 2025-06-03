@@ -240,6 +240,16 @@
           </s-icon-button>
           切换主题
         </s-tooltip>
+        <s-tooltip slot="action">
+          <s-icon-button slot="trigger" id="palette">
+            <s-icon><svg viewBox="0 -960 960 960">
+                <path
+                  d="M480-80q-82 0-155-31.5t-127.5-86Q143-252 111.5-325T80-480q0-83 32.5-156t88-127Q256-817 330-848.5T488-880q80 0 151 27.5t124.5 76q53.5 48.5 85 115T880-518q0 115-70 176.5T640-280h-74q-9 0-12.5 5t-3.5 11q0 12 15 34.5t15 51.5q0 50-27.5 74T480-80Zm0-400Zm-220 40q26 0 43-17t17-43q0-26-17-43t-43-17q-26 0-43 17t-17 43q0 26 17 43t43 17Zm120-160q26 0 43-17t17-43q0-26-17-43t-43-17q-26 0-43 17t-17 43q0 26 17 43t43 17Zm200 0q26 0 43-17t17-43q0-26-17-43t-43-17q-26 0-43 17t-17 43q0 26 17 43t43 17Zm120 160q26 0 43-17t17-43q0-26-17-43t-43-17q-26 0-43 17t-17 43q0 26 17 43t43 17ZM480-160q9 0 14.5-5t5.5-13q0-14-15-33t-15-57q0-42 29-67t71-25h70q66 0 113-38.5T800-518q0-121-92.5-201.5T488-800q-136 0-232 93t-96 227q0 133 93.5 226.5T480-160Z">
+                </path>
+              </svg></s-icon>
+          </s-icon-button>
+          调色盘
+        </s-tooltip>
       </s-appbar>
     </s-drawer>
     <s-dialog id="nav-login-dialog" style="padding: 16px;">
@@ -302,13 +312,13 @@
           <s-text-field id="edit-item-name" label="物品名称"
             style="display: grid; width: auto; margin-bottom: 16px;"></s-text-field>
           <s-text-field id="edit-item-purchase-price" type="number" label="购买价格" style="display: grid; width: auto;"
-            onchange="onPurchasePriceChange()"></s-text-field>
+            oninput="onPurchasePriceChange()"></s-text-field>
           <s-text-field id="edit-item-additional-value" type="number" label="附加价值"
-            style="display: grid; width: auto; margin-top: 16px;" onchange="onAdditionalValueChange()"></s-text-field>
+            style="display: grid; width: auto; margin-top: 16px;" oninput="onAdditionalValueChange()"></s-text-field>
           <s-date-picker label="入役日期（YYYY-MM-DD）" id="edit-item-entry-date" style="margin-top: 16px;"
-            onchange="onEntryDateChange(this)"></s-date-picker>
+            oninput="onEntryDateChange(this)"></s-date-picker>
           <s-date-picker label="退役日期（YYYY-MM-DD）" id="edit-item-retirement-date" style="margin-top: 16px;"
-            onchange="onRetirementDateChange(this)"></s-date-picker>
+            oninput="onRetirementDateChange(this)"></s-date-picker>
           <s-text-field id="edit-item-working-days" label="服役天数" readOnly="true"
             style="display: grid; width: auto; margin-top: 16px;"></s-text-field>
           <s-text-field id="edit-item-daily-value" label="日均价值" readOnly="true"
@@ -327,13 +337,13 @@
           <s-text-field id="add-item-name" label="物品名称"
             style="display: grid; width: auto; margin-bottom: 16px;"></s-text-field>
           <s-text-field id="add-item-purchase-price" type="number" label="购买价格" style="display: grid; width: auto;"
-            onchange="onAddPurchasePriceChange()"></s-text-field>
+            oninput="onAddPurchasePriceChange()"></s-text-field>
           <s-text-field id="add-item-additional-value" type="number" label="附加价值"
-            style="display: grid; width: auto; margin-top: 16px;" onchange="onAdditionalValueChange()"></s-text-field>
+            style="display: grid; width: auto; margin-top: 16px;" oninput="onAdditionalValueChange()"></s-text-field>
           <s-date-picker label="入役日期（YYYY-MM-DD）" id="add-item-entry-date" style="margin-top: 16px;"
-            onchange="onAddEntryDateChange()"></s-date-picker>
+            oninput="onAddEntryDateChange()"></s-date-picker>
           <s-date-picker label="退役日期（YYYY-MM-DD）" id="add-item-retirement-date" style="margin-top: 16px;"
-            onchange="onAddRetirementDateChange()"></s-date-picker>
+            oninput="onAddRetirementDateChange()"></s-date-picker>
           <s-text-field id="add-item-working-days" label="服役天数" readOnly="true"
             style="display: grid; width: auto; margin-top: 16px;"></s-text-field>
           <s-text-field id="add-item-daily-value" label="日均价值" readOnly="true"
@@ -345,20 +355,46 @@
       <s-button slot="action" type="text">取消</s-button>
       <s-button slot="action" type="filled-tonal" id="add-item-save-btn" onclick="addItem()">添加</s-button>
     </s-dialog>
+    <s-dialog id="color-palette-dialog">
+      <div slot="headline"> 调色盘 </div>
+      <div slot="text">
+        <p>选择一个你喜欢的颜色吧！</p>
+        <input type="color" id="color-picker" value="#7746ac"
+          style="width: 100%; height: 40px; border: none; border-radius: 8px; cursor: pointer;"
+          oninput="changeAccentColor(this.value)">
+        <div align="right">
+          <s-button slot="action" type="text" onclick="changeAccentColor('#7746ac')">恢复</s-button>
+          <s-button slot="action" type="text"
+            onclick="document.getElementById('color-palette-dialog').removeAttribute('showed')">关闭</s-button>
+        </div>
+    </s-dialog>
   </s-page>
 
   <script>
     const page = document.querySelector('s-page')
     const toggleTheme = document.querySelector('#toggleTheme')
     const refresh = document.querySelector('#refresh')
+    const palette = document.querySelector('#palette')
     refresh.onclick = () => {
       flushItemList(active = true);
     }
     toggleTheme.onclick = () => page.toggle(page.isDark ? 'light' : 'dark', toggleTheme)
+    palette.onclick = () => document.getElementById('color-palette-dialog').setAttribute('showed', 'true');
     document.addEventListener('DOMContentLoaded', () => {
-      // sober.theme.createScheme('#8e8cd8', { page: document.querySelector('s-page') });
+      // 初始化主题
+      const accentColor = localStorage.getItem('accentColor') || '#8e8cd8';
+      const colorPicker = document.querySelector('#color-picker');
+      colorPicker.value = accentColor;
+      sober.theme.createScheme(accentColor, { page: document.querySelector('s-page') });
       flushItemList();
     })
+    function changeAccentColor(color, fromRecover = false) {
+      sober.theme.createScheme(color, { page: document.querySelector('s-page') })
+      localStorage.setItem('accentColor', color);
+      if (fromRecover) {
+        document.getElementById('color-picker').value = color;
+      }
+    }
   </script>
 
 </html>
