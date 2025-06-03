@@ -1,5 +1,5 @@
 <div align="center">
-<img src="https://cdn.bili33.top/gh/GamerNoTitle/WorthIt@master/static/img/favicon.png" style="zoom:25%;" >
+<img src="https://cdn.bili33.top/gh/GamerNoTitle/WorthIt@master/static/img/favicon.png" height=200px width=200px >
 </div>
 
 
