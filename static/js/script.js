@@ -152,18 +152,25 @@ async function logout() {
 /**
  * 刷新物品列表，根据用户登录状态显示/隐藏编辑和删除按钮
  */
-async function flushItemList() {
+async function flushItemList(active = false) {
     const itemList = document.getElementById('item-list-container');
 
     // 等待 checkTokenExistsAndValid 完成并获取登录状态
     const loggedIn = await checkTokenExistsAndValid();
+    const loadingContainer = document.getElementById('loading-container');
+
+    if (active) {
+        loadingContainer.classList.remove('hidden');
+        const loadingText = document.getElementById('loading-text');
+        loadingText.innerText = '正在加载物品列表，请稍候...';
+        itemList.classList.add('hidden');
+    }
 
     try {
         const response = await fetch('/api/public/items', {
             method: 'GET',
             credentials: 'include'
         });
-
         if (!response.ok) {
             showDialog("错误", "获取物品列表失败，请稍后再试");
             console.error('获取物品列表失败:', response.status, response.statusText);
@@ -172,9 +179,10 @@ async function flushItemList() {
 
         const data = await response.json();
         itemList.innerHTML = '';
-        const loadingContainer = document.getElementById('loading-container');
-        loadingContainer.classList.add('hidden');
 
+        loadingContainer.classList.add('hidden');
+        const counter = document.getElementById('item-counter');
+        counter.innerText = data.items.length;
         data.items.forEach(item => {
             const itemElement = document.createElement('div');
             itemElement.className = 'item';
@@ -200,6 +208,7 @@ async function flushItemList() {
             `;
             itemList.appendChild(itemElement);
         });
+        itemList.classList.remove('hidden');
     } catch (error) {
         console.error('获取物品列表时出错:', error);
         // 可以在这里添加一个显示错误消息的逻辑

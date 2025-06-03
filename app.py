@@ -54,7 +54,7 @@ app.config["ENABLE_PUBLIC_VIEW"] = (
     not in ["false", "0"]
     else False
 )
-app.config["SECRET_KEY"] = os.urandom(64).hex()
+app.config["SECRET_KEY"] = os.urandom(64).hex() if not os.environ.get("SECRET_KEY") else os.environ.get("SECRET_KEY")   # 使用 os 做云函数兼容性处理
 app.config["WORTHIT_USERNAME"] = (
     os.environ.get("WORTHIT_USERNAME")
     if not os.environ.get("WORTHIT_USERNAME") is None

@@ -33,3 +33,8 @@ def generate_hashed_password(password: str) -> str:
     except Exception as e:
         print(f"Error generating hashed password: {e}")
         return ""
+
+if __name__ == "__main__":
+    plain_password = input("Enter a password to hash: ")
+    hashed = generate_hashed_password(plain_password)
+    print(f"Hashed Password: {hashed}")

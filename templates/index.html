@@ -156,7 +156,7 @@
               </path>
             </svg>
             我的好物
-            <s-badge slot="end" style="width: auto;" id="item-count">88</s-badge>
+            <s-badge slot="end" style="width: auto;" id="item-counter">0</s-badge>
           </s-menu-item>
           <s-menu-item id="nav-login-logout" onclick="openLoginLogoutDialog(this)" mode="login">
             <svg slot="start" viewBox="0 0 1024 1024" id="icon-login-logout">
@@ -192,7 +192,7 @@
           <div class="item" id="item-list">
           </div>
         </div>
-        <div align="center" id="loading-container">
+        <div align="center" id="loading-container" style="margin-top: 16px;">
           <s-circular-progress indeterminate="true"></s-circular-progress>
           <div id="loading-text" style="margin-top: 16px; color: var(--s-color-on-surface-variant);">
             正在加载物品列表...
@@ -205,16 +205,26 @@
         <s-icon-button slot="navigation" onclick="document.querySelector('s-drawer').toggle()">
           <s-icon name="menu"></s-icon>
         </s-icon-button>
-        <!--搜索框-->
         <s-button id="nav-add-item" type="filled-tonal" onclick="openAddItemDialog()" class="hidden">
           <s-icon name="add"></s-icon>
           添加物品
         </s-button>
         <s-tooltip slot="action">
+          <s-icon-button slot="trigger" id="refresh">
+            <s-icon>
+              <svg viewBox="0 -960 960 960">
+                <path
+                  d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z">
+                </path>
+              </svg>
+            </s-icon>
+          </s-icon-button>
+          刷新列表
+        </s-tooltip>
+        <s-tooltip slot="action">
           <s-icon-button slot="trigger" id="toggleTheme">
             <s-icon name="light_mode"></s-icon>
           </s-icon-button>
-          切换主题
         </s-tooltip>
       </s-appbar>
     </s-drawer>
@@ -326,6 +336,10 @@
   <script>
     const page = document.querySelector('s-page')
     const toggleTheme = document.querySelector('#toggleTheme')
+    const refresh = document.querySelector('#refresh')
+    refresh.onclick = () => {
+      flushItemList(active = true);
+    }
     toggleTheme.onclick = () => page.toggle(page.isDark ? 'light' : 'dark', toggleTheme)
     document.addEventListener('DOMContentLoaded', () => {
       // sober.theme.createScheme('#8e8cd8', { page: document.querySelector('s-page') });

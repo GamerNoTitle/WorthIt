@@ -13,3 +13,4 @@ wheels/
 config.json
 example*
 items*
+.vercel
