@@ -11,6 +11,12 @@
 
 因为上了大学以后，我就在为我自己购买一些东西，这让我萌生了一个想法：如果这些东西，我一直用下去，那么每天使用它们的成本是多少呢？于是我就做了这么一个项目
 
+- Telegram 私信: https://t.me/PaffCreamPMBot  
+
+- Telegram 群组: https://t.me/DohnaNyan  
+
+- Telegram 频道: https://t.me/PaffChannel  
+
 ## 开始使用
 
 你需要准备一个 Notion 账号和一个 Vercel 账号 / 服务器 / 能跑容器的东西
