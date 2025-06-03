@@ -165,7 +165,15 @@ $ cd WorthIt
 $ pip install -r requirements.txt
 ```
 
-接着直接运行 `app.py` 即可
+复制一份 `config.example.json` 为 `config.json`，然后填入对应的变量内容，有以下对应关系
+
+- `token` -> `NOTION_TOKEN`
+- `dbid` -> `NOTION_DATABASE_ID`
+- `public` -> `ENABLE_PUBLIC_VIEW`
+- `credentials.username` -> `WORTHIT_USERNAME`
+- `credentials.password` -> `WORTHIT_PASSWORD`
+
+填好了以后直接运行 `app.py` 即可
 
 ```bash
 $ python app.py
