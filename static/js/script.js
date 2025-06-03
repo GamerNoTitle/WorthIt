@@ -155,12 +155,11 @@ async function logout() {
 async function flushItemList(active = false) {
     const itemList = document.getElementById('item-list-container');
 
-    // 等待 checkTokenExistsAndValid 完成并获取登录状态
-    const loggedIn = await checkTokenExistsAndValid();
     const loadingContainer = document.getElementById('loading-container');
 
     if (active) {
         loadingContainer.classList.remove('hidden');
+        document.getElementById("loading-error-container").classList.add('hidden');
         const loadingText = document.getElementById('loading-text');
         loadingText.innerText = '正在加载物品列表，请稍候...';
         itemList.classList.add('hidden');
@@ -171,6 +170,9 @@ async function flushItemList(active = false) {
 
     const counter = document.getElementById('item-counter');
     counter.innerText = '0'; // 在加载前将计数器重置为0
+
+    // 等待 checkTokenExistsAndValid 完成并获取登录状态
+    const loggedIn = await checkTokenExistsAndValid();
 
     try {
         const response = await fetch('/api/public/items', {
