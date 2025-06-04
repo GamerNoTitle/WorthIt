@@ -361,7 +361,7 @@ async function flushItemList(active = false) {
 
             // 添加日均价格
             const dailyPriceDiv = document.createElement('div');
-            dailyPriceDiv.textContent = `日均价格：${item.properties.日均价格 ? item.properties.日均价格 : "是刚刚开始用嘛？明天再来看吧 (¬◡¬)✧"}`;
+            dailyPriceDiv.textContent = `日均价格：${item.properties.日均价格 ? item.properties.日均价格 : (item.properties.入役日期 ? "是刚刚开始用嘛？明天再来看吧 (¬◡¬)✧" : "诶？是预售品嘛 ꒰⑅°͈꒳​°͈꒱？")}`;
             textDiv.appendChild(dailyPriceDiv);
 
             // 创建按钮容器
@@ -424,7 +424,7 @@ function openDeleteItemDialog(itemId, itemName) {
     const confirmButton = document.getElementById('item-delete-confirm-btn');
     const dialogText = document.getElementById('item-delete-dialog-text');
     dialogText.innerText = `您确定要删除物品 「${itemName}」 吗 (((ﾟДﾟ;)??`; // 设置对话框文本
-    confirmButton.onclick = function() {
+    confirmButton.onclick = function () {
         deleteItem(itemId, itemName); // 绑定删除操作到确认按钮
     };
     dialog.setAttribute('showed', 'true'); // 显示删除确认对话框
@@ -542,7 +542,7 @@ function openEditItemDialog(itemId, itemName) {
         };
         const confirmButton = document.getElementById('edit-item-save-btn');
         // 绑定保存操作到确认按钮，并传递物品ID和原始数据
-        confirmButton.onclick = function() {
+        confirmButton.onclick = function () {
             editItem(itemId, prevData);
         };
 
@@ -978,8 +978,8 @@ function addItem() {
     const itemDescriptionInput = document.getElementById('add-item-description');
 
     // 客户端输入验证
-    if (!itemNameInput.value || !itemPriceInput.value || !itemEntryDateInput.value) {
-        showDialog("错误", "物品名称、购买价格和入役日期不能为空"); // 提示必填项
+    if (!itemNameInput.value || !itemPriceInput.value) {
+        showDialog("错误", "物品名称和购买价格不能为空"); // 提示必填项
         return;
     }
 
