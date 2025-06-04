@@ -344,7 +344,7 @@ async function flushItemList(active = false) {
 
             // 添加购买日期
             const entryDateDiv = document.createElement('div');
-            entryDateDiv.textContent = `购买日期：${item.properties.入役日期 || '未填写'}`;
+            entryDateDiv.textContent = `购买日期：${item.properties.入役日期 || '还没有到货诶 (๑•.•๑)'}`;
             textDiv.appendChild(entryDateDiv);
 
             // 添加退役日期（如果存在）
@@ -356,7 +356,7 @@ async function flushItemList(active = false) {
 
             // 添加服役天数
             const serviceDaysDiv = document.createElement('div');
-            serviceDaysDiv.textContent = `服役天数：${item.properties.服役天数 !== undefined ? item.properties.服役天数 : '计算中...'}`;
+            serviceDaysDiv.textContent = `服役天数：${item.properties.服役天数 !== undefined ? item.properties.服役天数 : (item.properties.入役日期? '计算中...': "是预售品诶，到货了再来登记吧！")}`;
             textDiv.appendChild(serviceDaysDiv);
 
             // 添加日均价格
