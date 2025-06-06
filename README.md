@@ -23,9 +23,10 @@
 
 ### 复刻模板
 
-打开这个 Notion 页面
+打开这个 Notion 页面（二选一，第一个是上架的模板）
 
-https://gamernotitle.notion.site/Worthit-2076dedbb71680fda64ad359bfe37577
+- https://www.notion.com/templates/worth-it
+- https://gamernotitle.notion.site/Worthit-2076dedbb71680fda64ad359bfe37577
 
 用自己的 Notion 账号复制一份，点击右上角的复制按钮就可以了
 
